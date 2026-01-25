@@ -1,21 +1,23 @@
 import psycopg2
+from dotenv import load_dotenv
+import os
+
+
+load_dotenv()
+DB_CONFIG = os.getenv("DB_CONFIG")
 
 
 def save_to_db(data):
     try:
-        connection = psycopg2.connect(
-            user = "postgres",
-            password = "3587",
-            host = "127.0.0.1",
-            port = "5432",
-            database = "postgres"
-
-        )
+        connection = psycopg2.connect(DB_CONFIG)
         cursor = connection.cursor()
-        insert_query = """INSERT INTO PRODUCTS (title, price)
+        insert_query = """INSERT INTO products (title, price)
         VALUES (%s, %s)
         ON CONFLICT (title)
-        DO UPDATE SET price = EXCLUDED.price
+        DO UPDATE SET 
+        old_price = products.price,
+        price = EXCLUDED.price
+        WHERE products.price != EXCLUDED.price;
         """
         records_to_insert = [(item["title"], item["price"]) for item in data]
         print (records_to_insert)
