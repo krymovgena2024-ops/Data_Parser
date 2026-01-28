@@ -51,7 +51,6 @@ async def cmd_start(message: Message):
 
 
 async def main():
-    #await dp.start_polling(bot)
     await check_price_changes()
     await bot.session.close()
     
