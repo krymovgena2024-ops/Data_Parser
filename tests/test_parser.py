@@ -46,6 +46,7 @@ def test_get_product_price_with_mocker(mocker):
     assert mock_conn.commit.called
     assert mock_conn.close.called
 
+
 @pytest.mark.asyncio
 async def test_check_price_changes(mock_psycopg2, sample_data):
     products = sample_data["PS5"]

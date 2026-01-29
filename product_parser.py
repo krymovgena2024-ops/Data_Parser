@@ -2,9 +2,13 @@ import requests
 from bs4 import BeautifulSoup
 import cloudscraper
 from database import save_to_db
+import time
+from concurrent.futures import ThreadPoolExecutor
 
 
-def get_product_price(url):
+def get_product_price(page):
+    test_url = "https://rozetka.com.ua/ua/consoles/c80020/page="
+    url = f"{test_url}{page}"
     try:
         scrapper = cloudscraper.create_scraper()
         response = scrapper.get(url)
@@ -23,15 +27,25 @@ def get_product_price(url):
             return results
     except Exception as e:
         print(f"Ошибка: {e}")
-        
+
+
+def fast_scrapper():
+    all_data = []
+    with ThreadPoolExecutor() as executor:
+        pages = list(range(1, 57))
+        result = list(executor.map(get_product_price, pages))
+    for res in result:
+        all_data.extend(res)
+    if all_data:
+        unique_data = {item['title']: item for item in all_data}.values()
+        start = time.time()
+        save_to_db(unique_data)
+        finish = time.time()
+        print(f"Result save: {finish-start}")
 
 
 if __name__ == "__main__":
-    test_url = "https://rozetka.com.ua/ua/consoles/c80020/page="
-    for i in range(1, 3):
-        new_url = test_url + str(i)
-        data = get_product_price(new_url)
-        if data:
-            # оставить только уникальные товары по названию
-            unique_data = {item['title']: item for item in data}.values()
-            save_to_db(list(unique_data))
+    start = time.time()
+    fast_scrapper()
+    finish = time.time()
+    print(f"Result: {finish-start}")

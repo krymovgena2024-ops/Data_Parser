@@ -1,6 +1,7 @@
 import psycopg2
 from dotenv import load_dotenv
 import os
+from psycopg2.extras import execute_values
 
 
 load_dotenv()
@@ -21,7 +22,8 @@ def save_to_db(data):
         """
         records_to_insert = [(item["title"], item["price"]) for item in data]
         print (records_to_insert)
-        cursor.executemany(insert_query, records_to_insert)
+        execute_values(cursor, insert_query, page_size=1000)
+        #cursor.executemany(insert_query, records_to_insert)
         connection.commit()
         print(f"Обработано: {len(records_to_insert)} товаров")
     except Exception as e:
