@@ -7,7 +7,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 
 def get_product_price(page):
-    test_url = "https://rozetka.com.ua/ua/consoles/c80020/page="
+    test_url = "https://rozetka.com.ua/ua/table-lamps/c80192/page="
     url = f"{test_url}{page}"
     try:
         scrapper = cloudscraper.create_scraper()
@@ -15,7 +15,6 @@ def get_product_price(page):
         if response.status_code == 200:
             soup = BeautifulSoup(response.text, "html.parser")
             products = soup.find_all("article", class_="content")
-            print(len(products))
             results = []
             for item in products:
                 title_name = item.find("a", class_="tile-title")
@@ -32,16 +31,21 @@ def get_product_price(page):
 def fast_scrapper():
     all_data = []
     with ThreadPoolExecutor() as executor:
-        pages = list(range(1, 57))
+        pages = list(range(1, 51))
         result = list(executor.map(get_product_price, pages))
     for res in result:
-        all_data.extend(res)
+        if res:
+            all_data.extend(res)
     if all_data:
         unique_data = {item['title']: item for item in all_data}.values()
         start = time.time()
-        save_to_db(unique_data)
+        save_to_db(list(unique_data))
         finish = time.time()
+        print(f"Всего собрано товаров: {len(all_data)}")
+        print(f"Уникальных товаров: {len(unique_data)}")
         print(f"Result save: {finish-start}")
+    else:
+        print("Данные не собраны, сохранять нечего!")
 
 
 if __name__ == "__main__":
