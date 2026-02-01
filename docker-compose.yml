@@ -1,0 +1,6 @@
+services:
+  parser:
+    image: data-parser-rozetka
+    container_name: rozetka-test
+    environment:
+      - DB_CONFIG=dbname=postgres user=postgres password=3587 host=host.docker.internal port=5432
