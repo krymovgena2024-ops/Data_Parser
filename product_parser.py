@@ -6,7 +6,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 
 def get_product_price(page):
-    test_url = "https://rozetka.com.ua/ua/table-lamps/c80192/page="
+    test_url = "https://rozetka.com.ua/ua/mobile-phones/c80003/page="
     url = f"{test_url}{page}"
     try:
         scrapper = cloudscraper.create_scraper()
@@ -21,7 +21,13 @@ def get_product_price(page):
                 product_price = item.find("div", class_="price")
                 raw_price = product_price.get_text(strip=True)
                 product_price = "".join(filter(str.isdigit, raw_price))
-                results.append({"title": title_name, "price": product_price})
+                # Ищем ссылку (тег <a>)
+                link_element = item.find("a", class_="tile-title")
+                if link_element:
+                    title_name = link_element.get_text(strip=True)
+                # Извлекаем саму ссылку из атрибута href
+                product_url = link_element['href']
+                results.append({"title": title_name, "price": product_price, "url": product_url})
             return results
     except Exception as e:
         print(f"Ошибка: {e}")
@@ -30,7 +36,7 @@ def get_product_price(page):
 def fast_scrapper():
     all_data = []
     with ThreadPoolExecutor() as executor:
-        pages = list(range(1, 51))
+        pages = list(range(1, 84))
         result = list(executor.map(get_product_price, pages))
     for res in result:
         if res:
@@ -42,7 +48,7 @@ def fast_scrapper():
         finish = time.time()
         print(f"Всего собрано товаров: {len(all_data)}")
         print(f"Уникальных товаров: {len(unique_data)}")
-        print(f"Result save: {finish-start}")
+        print(f"Время сохранения: {finish-start}")
     else:
         print("Данные не собраны, сохранять нечего!")
 
@@ -51,4 +57,4 @@ if __name__ == "__main__":
     start = time.time()
     fast_scrapper()
     finish = time.time()
-    print(f"Result: {finish-start}")
+    print(f"Время парсинга: {finish-start}")
